@@ -1,0 +1,17 @@
+{
+  "name": "soso-lark-bot",
+  "private": true,
+  "type": "module",
+  "description": "Lark bot: each Lark thread is one Claude Agent SDK session that makes videos in this workspace. Runs on Node 24 straight from the .ts files (no build step).",
+  "scripts": {
+    "start": "node src/index.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.311",
+    "@larksuiteoapi/node-sdk": "1.76.0",
+    "zod": "4.6.7"
+  }
+}

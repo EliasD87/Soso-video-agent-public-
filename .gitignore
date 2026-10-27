@@ -1,0 +1,22 @@
+# Whitelist: the repo holds only what the Lark bot's VPS workspace needs. Everything else in this
+# folder (finished dailies, renders, side videos, keys) stays on this PC. Add paths with "!/name/".
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/package.json
+!/package-lock.json
+!/lark-bot/
+!/shared-assets/
+/shared-assets/plates/
+!/paris-unrest/
+!/anthropic-files/
+!/.claude/
+/.claude/*
+!/.claude/skills/
+
+node_modules/
+out/
+.env
+.env.*
+*.log

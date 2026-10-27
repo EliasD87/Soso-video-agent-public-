@@ -1,0 +1,33 @@
+{
+  "fetchedAt": "2026-10-26T06:26:03.332Z",
+  "assets": [
+    {
+      "ticker": "USTECH-100",
+      "name": "US Tech Index",
+      "price": "28,958",
+      "change": "-0.0%",
+      "up": false
+    },
+    {
+      "ticker": "CL",
+      "name": "Crude Oil (WTI)",
+      "price": "$100.92",
+      "change": "-2.3%",
+      "up": false
+    },
+    {
+      "ticker": "XAUT",
+      "name": "Gold (Tether)",
+      "price": "$4,004",
+      "change": "+0.4%",
+      "up": true
+    },
+    {
+      "ticker": "BTC",
+      "name": "Bitcoin",
+      "price": "$80,005",
+      "change": "-0.7%",
+      "up": false
+    }
+  ]
+}

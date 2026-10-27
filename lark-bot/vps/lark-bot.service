@@ -1,0 +1,15 @@
+# Always-on Lark bot, run by the videobot user's own systemd (so the 4 GB / 2-core cap applies).
+# Installed by deploy.sh; logs: journalctl --user -u lark-bot -f
+[Unit]
+Description=SoSo Lark video bot
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/Soso-Video/lark-bot
+Environment=PATH=%h/.local/node/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/node/bin/node src/index.ts
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
