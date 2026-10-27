@@ -7,6 +7,7 @@ export PATH="$HOME/.local/node/bin:$PATH"
 cd "$HOME/Soso-Video"
 
 git pull --ff-only
+bash lark-bot/vps/install-node.sh                     # Node 24 in ~/.local/node, if not there yet
 npm install --no-audit --no-fund                      # Remotion, shared by every daily
 (cd lark-bot && npm ci --no-audit --no-fund)          # the bot's own packages
 [ -f .env ] || { echo "missing ~/Soso-Video/.env (copy it from the PC first)"; exit 1; }

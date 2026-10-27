@@ -5,21 +5,11 @@
 # the 4 GB cap ever killed anything.
 #   bash ~/Soso-Video/lark-bot/vps/test-render.sh     (after cloning the repo to ~/Soso-Video)
 set -euo pipefail
-REPO="$HOME/Soso-Video"; W="$HOME/work"; NODE="$HOME/.local/node"
-mkdir -p "$W" "$NODE"
+REPO="$HOME/Soso-Video"; W="$HOME/work"
+mkdir -p "$W"
 
-if [ ! -x "$NODE/bin/node" ]; then
-  echo "== installing Node 24 into $NODE (only for this user; system Node untouched)"
-  base=https://nodejs.org/dist/latest-v24.x
-  sums=$(curl -fsSL "$base/SHASUMS256.txt")
-  file=$(awk '/linux-x64\.tar\.xz$/ {print $2}' <<<"$sums")
-  curl -fsSLo "$HOME/$file" "$base/$file"
-  (cd "$HOME" && grep " $file\$" <<<"$sums" | sha256sum -c -)
-  tar -xJf "$HOME/$file" -C "$NODE" --strip-components=1
-  rm "$HOME/$file"
-fi
-export PATH="$NODE/bin:$PATH"
-echo "node $(node -v)"
+bash "$REPO/lark-bot/vps/install-node.sh"
+export PATH="$HOME/.local/node/bin:$PATH"
 
 cd "$REPO"
 echo "== npm ci"

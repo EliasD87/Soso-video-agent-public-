@@ -3,6 +3,7 @@
 /*
 !/.gitignore
 !/.gitattributes
+!/README.md
 !/AGENTS.md
 !/package.json
 !/package-lock.json
@@ -19,4 +20,5 @@ node_modules/
 out/
 .env
 .env.*
+!/.env.example
 *.log

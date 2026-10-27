@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # One-time VPS setup for the Lark video bot. Run once as root, from the PC with run-setup.sh
-# (one login, the script is streamed over ssh), or on the server with: sudo bash setup-root.sh
+# (one login, the script is streamed over ssh), or on the server with:
+#   sudo bash setup-root.sh "ssh-ed25519 AAAA... videobot"     (your bot key's .pub line)
 # Built for a server that also runs other important work:
 #  - creates a separate user "videobot"; everything the bot does lives in /home/videobot
 #  - hard-caps ALL of that user's processes at 4 GB RAM (no swap) and 2 CPU cores, so the bot
@@ -9,7 +10,8 @@
 #    it does not touch system Node, Docker, the firewall, other users or other services
 set -euo pipefail
 BOT=videobot
-KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID5MD5FZ1xUqnLvMSu0Otklk1497b7XEqNxL9zAoLAkN videobot-lark-test"
+KEY="${1:?pass the bot SSH public key (the one line in your .pub file) as the first argument}"
+case "$KEY" in ssh-*|ecdsa-*) ;; *) echo "that doesn't look like an SSH public key"; exit 1 ;; esac
 
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
 [ -f /sys/fs/cgroup/cgroup.controllers ] || { echo "needs cgroup v2 (Ubuntu 22.04 or newer)"; exit 1; }
