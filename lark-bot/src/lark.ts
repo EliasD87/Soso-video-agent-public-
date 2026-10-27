@@ -2,7 +2,7 @@
 // long-connection event stream, and the few calls the bot makes.
 import * as Lark from "@larksuiteoapi/node-sdk";
 import { openSync, readFileSync, readSync, closeSync, renameSync, statSync } from "node:fs";
-import { basename, extname } from "node:path";
+import { basename } from "node:path";
 import type { LarkApp } from "./config.ts";
 
 export type MessageEvent = {
@@ -21,7 +21,6 @@ export type MessageEvent = {
 
 const FILE_LIMIT = 30 * 1024 * 1024; // Lark: chat files up to 30 MB
 const IMAGE_LIMIT = 10 * 1024 * 1024; // Lark: chat images up to 10 MB
-const FILE_TYPES = ["mp4", "pdf", "doc", "xls", "ppt", "opus"] as const;
 
 export type LarkConnection = ReturnType<typeof connect>;
 const connections = new Map<string, LarkConnection>();
@@ -39,11 +38,13 @@ export function connect(app: LarkApp) {
 
   /** Replies under a message. In a group, inThread opens (or continues) its thread; returns the thread_id. */
   async function reply(messageId: string, msgType: string, content: object, inThread = true): Promise<string | undefined> {
-    const res = await client.im.message.reply({
-      path: { message_id: messageId },
-      data: { msg_type: msgType, content: JSON.stringify(content), reply_in_thread: inThread },
-    });
-    if (res.code) throw new Error(`Lark reply failed (${res.code}): ${res.msg}`);
+    const res = await client.im.message
+      .reply({
+        path: { message_id: messageId },
+        data: { msg_type: msgType, content: JSON.stringify(content), reply_in_thread: inThread },
+      })
+      .catch(larkError);
+    if (res.code) throw new Error(`Lark error ${res.code}: ${res.msg}`);
     return res.data?.thread_id;
   }
 
@@ -74,18 +75,26 @@ export function connect(app: LarkApp) {
       }
     },
 
-    /** Uploads a file for a chat message and returns its file_key. */
-    async uploadFile(path: string): Promise<string> {
+    /**
+     * Uploads a file for a chat message and returns its file_key. The type must match the message:
+     * "mp4" only goes out as a "media" message, "stream" (any file) as a "file" message.
+     */
+    async uploadFile(path: string, fileType: "mp4" | "stream", durationMs?: number): Promise<string> {
       const size = statSync(path).size;
       if (size > FILE_LIMIT) {
         const mb = (size / 1048576).toFixed(1);
         throw new Error(`${basename(path)} is ${mb} MB; Lark chat files must be under 30 MB. Send a smaller copy.`);
       }
-      const ext = extname(path).slice(1).toLowerCase();
-      const fileType = (FILE_TYPES as readonly string[]).includes(ext) ? (ext as (typeof FILE_TYPES)[number]) : "stream";
-      const up = await client.im.file.create({
-        data: { file_type: fileType, file_name: basename(path), file: readFileSync(path) },
-      });
+      const up = await client.im.file
+        .create({
+          data: {
+            file_type: fileType,
+            file_name: basename(path),
+            file: readFileSync(path),
+            ...(durationMs ? { duration: durationMs } : {}),
+          },
+        })
+        .catch(larkError);
       if (!up?.file_key) throw new Error("Lark file upload returned no file_key");
       return up.file_key;
     },
@@ -95,7 +104,7 @@ export function connect(app: LarkApp) {
       if (statSync(path).size > IMAGE_LIMIT) {
         throw new Error(`${basename(path)} is over 10 MB; Lark chat images must be smaller. Send a smaller copy.`);
       }
-      const up = await client.im.image.create({ data: { image_type: "message", image: readFileSync(path) } });
+      const up = await client.im.image.create({ data: { image_type: "message", image: readFileSync(path) } }).catch(larkError);
       if (!up?.image_key) throw new Error("Lark image upload returned no image_key");
       return up.image_key;
     },
@@ -112,6 +121,13 @@ export function connect(app: LarkApp) {
   };
   connections.set(app.name, lark);
   return lark;
+}
+
+/** Turns the SDK's bare "Request failed with status code 400" into Lark's own code and message. */
+function larkError(err: unknown): never {
+  const data = (err as { response?: { data?: { code?: number; msg?: string } } })?.response?.data;
+  if (data?.code) throw new Error(`Lark error ${data.code}: ${data.msg}`);
+  throw err;
 }
 
 function imageExt(path: string): string {

@@ -34,6 +34,7 @@ function ok(text: string) {
 }
 
 function failed(err: unknown) {
+  console.error("lark tool failed", err);
   return { content: [{ type: "text" as const, text: String(err instanceof Error ? err.message : err) }], isError: true };
 }
 
@@ -47,7 +48,7 @@ function larkServer(thread: ThreadRecord) {
     tools: [
       tool("send_message", "Post a short plain-text message in this Lark thread: progress, a question, a draft for approval.", { text: z.string() }, async ({ text }) => run(() => postText(thread, text))),
       tool("send_image", "Post an image (PNG/JPG/WEBP under 10 MB) in this Lark thread, e.g. a cover or preview stills.", { path: z.string().describe("absolute path to the image") }, async ({ path }) => run(() => postImage(thread, path))),
-      tool("send_file", "Post a file under 30 MB in this Lark thread, e.g. the finished MP4.", { path: z.string().describe("absolute path to the file") }, async ({ path }) => run(() => postFile(thread, path))),
+      tool("send_file", "Post a file under 30 MB in this Lark thread. An MP4 shows as a video that plays in the chat (cover frame added automatically); other files as attachments.", { path: z.string().describe("absolute path to the file") }, async ({ path }) => run(() => postFile(thread, path))),
     ],
   });
 }
