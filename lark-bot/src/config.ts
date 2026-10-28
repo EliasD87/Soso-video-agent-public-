@@ -41,6 +41,8 @@ export const config = {
   // Cap for one request in a thread (one user message and everything Claude does for it); 0 = no cap.
   maxUsdPerTurn: Math.max(0, Number(process.env.MAX_USD_PER_JOB) || 0),
   model: process.env.CLAUDE_MODEL?.trim() || "claude-opus-5-5",
+  // Remotion render workers; match the CPU cores the bot user gets (BOT_CPUS in setup-root.sh).
+  renderConcurrency: Math.max(1, Math.floor(Number(process.env.RENDER_CONCURRENCY)) || 2),
   // Thread records live outside the repo so a git pull never touches them.
   dataDir: resolve(WORKSPACE, "..", "bot-data"),
   // Attachments people send land here, inside the workspace so Claude's tools can reach them.

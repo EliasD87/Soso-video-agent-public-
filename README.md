@@ -2,7 +2,7 @@
 
 A Lark (Feishu) bot that makes short videos with Claude. People chat with it in Lark. Each thread is one Claude session that can talk through an idea, write the script, make the voice and images, render the video with Remotion on a small Linux VPS, and post previews and the finished MP4 back into the thread.
 
-This guide sets up the whole thing from scratch. It takes about an hour, most of it waiting for the first test render.
+This guide sets up the whole thing from scratch. It takes about an hour, most of it waiting for the first test render. **In a hurry? [DEPLOY.md](DEPLOY.md) is the short version, with server sizes.**
 
 ## How it works
 
@@ -25,7 +25,7 @@ Lark chat  ──(persistent connection: the bot dials out, no public URL needed
 
 | | |
 |---|---|
-| **VPS** | Ubuntu 22.04 or 24.04, x86_64, with root access once. The bot gets its own user, capped at **4 GB RAM and 2 CPU cores**, so the server can keep running other work. About 40 GB free disk. |
+| **VPS** | Ubuntu 22.04 or 24.04, x86_64, with root access once. The bot gets its own user with hard caps on RAM and CPU (default **4 GB and 2 cores**), so the server can keep running other work. About 40 GB free disk; 4 vCPU / 8 GB is the comfortable size (see [DEPLOY.md](DEPLOY.md#1-pick-a-server)). |
 | **Claude API key** | [console.anthropic.com](https://console.anthropic.com), billed per use (see [Costs](#costs-and-speed)). The Agent SDK needs an API key, not a Claude subscription. |
 | **ElevenLabs API key** | With Text to Speech access. |
 | **Magnific API key** | REST API access (magnific.com → API keys). |
@@ -53,14 +53,14 @@ ssh-keygen -t ed25519 -N "" -C videobot -f ~/.ssh/videobot_vps
 From the repo folder on your PC (it asks for the root password once):
 
 ```bash
-bash lark-bot/vps/run-setup.sh root@YOUR_SERVER ~/.ssh/videobot_vps.pub
+BOT_MEMORY=4G BOT_CPUS=2 bash lark-bot/vps/run-setup.sh root@YOUR_SERVER ~/.ssh/videobot_vps.pub
 ```
 
 Or copy `lark-bot/vps/setup-root.sh` to the server and run `sudo bash setup-root.sh "<the line in videobot_vps.pub>"`.
 
 What [setup-root.sh](lark-bot/vps/setup-root.sh) does:
 - creates a user **`videobot`** with no sudo rights, which logs in only with your key;
-- caps **everything that user runs** at 4 GB RAM (no swap) and 2 CPU cores, so the bot can never take more. If it goes over, only the bot's process is stopped. Edit `MemoryMax` and `CPUQuota` in the script to change the cap;
+- caps **everything that user runs** at `BOT_MEMORY` RAM (no swap) and `BOT_CPUS` cores, so the bot can never take more. If it goes over, only the bot's process is stopped. Set `RENDER_CONCURRENCY` in `.env` to the same number of cores;
 - installs the libraries headless Chrome needs, fonts, and Python imaging libs;
 - turns on "linger", so the bot's service keeps running after you log out and starts on boot.
 

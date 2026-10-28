@@ -4,6 +4,7 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/DEPLOY.md
 !/AGENTS.md
 !/package.json
 !/package-lock.json
